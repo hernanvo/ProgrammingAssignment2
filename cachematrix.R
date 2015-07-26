@@ -36,40 +36,39 @@ makeCacheMatrix <- function(x = matrix()) {
         getSolve <- function() cacheInvMatrix
         
         ##function that compute inverse of square matrix and cache it
+        ##encapsulates solve() calculation in ordeer to avoid assign incorrect inverse matrix.
         ##returns NA if can't solve 
         computeSolve <- function()
         {
+                message("computing solve()")
+                
                 ##assign indetermined default value
                 cacheInvMatrix <<- NA
                 
                 ##validate if x object is a matrix
                 if( is.matrix(x) )
                 {
-                        ##validate if matrix is square    
-                        if( nrow(x) == ncol(x) )
+                        ##validate if is a numeric matrix
+                        if ( (length(x) > 0) && is.numeric(x) )
                         {
-                                ##validate if is a numeric matrix
-                                if ( length(x[sapply(x, function(y) is.numeric(y))]) > 0 )
+                                ##validate if matrix is square    
+                                if( nrow(x) == ncol(x) )
                                 {
-                                        ##if matrix is not singular (determinant is different of zero)
-                                        ##can calculate inverse matrix
-                                        if( det(x) != 0 )
-                                        {
-                                                cacheInvMatrix <<- try(solve(x), silent = TRUE) 
-                                        }
-                                        else
-                                        {
-                                                message("matrix is singular, cannot compute inverse matrix.")
-                                        }
+                                        
+                                        cacheInvMatrix <<- tryCatch(solve(x), 
+                                                                    error = function(err) { 
+                                                                            message(err) 
+                                                                            return(NA)}) 
+                                        
                                 }
                                 else
                                 {
-                                        message("matrix is not numeric, cannot compute inverse matrix.")
+                                        message("matrix is not square, cannot compute inverse matrix.")
                                 }
                         }
                         else
                         {
-                                message("matrix is not square, cannot compute inverse matrix.")
+                                message("matrix is not numeric, cannot compute inverse matrix.")
                         }
                 }
                 else
